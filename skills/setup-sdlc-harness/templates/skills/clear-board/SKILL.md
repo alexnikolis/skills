@@ -23,9 +23,13 @@ All concrete ticket mechanics are defined in `docs/agents/issue-tracker.md` § S
 
 Persist every state change durably at the moment you make it, per the conventions doc — assume you may crash at any point; a fresh session must resume from the board alone.
 
+## Stage agents
+
+Stage → subagent defaults: plan `sdlc-planner`, implement `sdlc-implementer`, review `sdlc-reviewer`, advise `sdlc-advisor`. If `.claude/skills/clear-board/config.json` exists, its `planner` / `implementer` / `reviewer` keys override the subagent name for that stage (e.g. `sdlc-implementer-codex` routes implementation through the Codex CLI). Resolve once at start and use the resolved names everywhere that stage is dispatched — pipeline stages, fix rounds, and the landing rebase round. The escalation flow is unchanged: alternate backends bridge SendMessage internally.
+
 ## Dry-run (`--plan`)
 
-Read the board, print the dependency DAG, the dispatch order/parallelism, the per-stage agent + model assignments, and the caps. Spawn nothing. Stop.
+Read the board, print the dependency DAG, the dispatch order/parallelism, the per-stage agent + model assignments (as resolved above), and the caps. Spawn nothing. Stop.
 
 ## Hard limits (per ticket, tracked as ticket counters — see the conventions doc)
 
@@ -55,17 +59,17 @@ Also on start: **resume** any ticket already `in-progress` — its counters are 
 
 Each stage is one sub-agent (Agent tool) given only: ticket reference, worktree path, scope, attempt number — plus the fix-round number, review-round number, or escalation number where the stage calls for it. Run stages in the group's worktree, chained:
 
-1. **Plan** — `subagent_type: sdlc-planner`. If it returns blocking open questions: resolve them yourself if trivial; otherwise this is an escalation — increment `Escalations:`, spawn `sdlc-advisor`, and relay `ANSWER:` back to the *paused planner* via SendMessage so it finalizes the plan (never restart it).
-2. **Implement** — `subagent_type: sdlc-implementer`.
+1. **Plan** — `subagent_type`: the resolved planner. If it returns blocking open questions: resolve them yourself if trivial; otherwise this is an escalation — increment `Escalations:`, spawn `sdlc-advisor`, and relay `ANSWER:` back to the *paused planner* via SendMessage so it finalizes the plan (never restart it).
+2. **Implement** — `subagent_type`: the resolved implementer.
    - If it returns `ESCALATION:`: increment `Escalations:`; if over cap → REPLAN path. Otherwise spawn `sdlc-advisor` with the ticket reference, worktree path, escalation number, and the question. On `ANSWER:` relay it to the *same paused implementer* via SendMessage (keep its context; never restart it for an answer). On `REPLAN:` abandon the stage, increment `Attempts:`, reset `Escalations:` and `Fix rounds:`, and restart from Plan (cap permitting).
-3. **Review** — `subagent_type: sdlc-reviewer`, passing the review round number (first review = round 1). On *needs-fixes*: increment `Fix rounds:` (cap 2), dispatch `sdlc-implementer` again with the review findings as the work order and the fix-round number, then re-review with the next round number. On *approve*: proceed to landing.
+3. **Review** — `subagent_type`: the resolved reviewer, passing the review round number (first review = round 1). On *needs-fixes*: increment `Fix rounds:` (cap 2), dispatch the resolved implementer again with the review findings as the work order and the fix-round number, then re-review with the next round number. On *approve*: proceed to landing.
 
 ## Landing (orchestrator does this itself, strictly serialized)
 
 Never land two branches concurrently. Fully land one ticket before touching another.
 
 1. Follow the conventions doc's **landing procedure**. Whatever the mechanism (local merge or PR/MR), the land is final only after the full test suite passes against up-to-date main.
-2. **On conflict or test/check failure**: one **rebase round** per landing (does not consume fix rounds) — dispatch a `sdlc-implementer` into the group's worktree ("rebase onto current main, resolve conflicts, make the suite pass", with the failure output as findings), then re-review and retry the landing procedure. If landing fails again → exhaustion path.
+2. **On conflict or test/check failure**: one **rebase round** per landing (does not consume fix rounds) — dispatch the resolved implementer into the group's worktree ("rebase onto current main, resolve conflicts, make the suite pass", with the failure output as findings), then re-review and retry the landing procedure. If landing fails again → exhaustion path.
 3. **On success**: mark the ticket done with the landing artifact, remove the worktree (`git worktree remove`, `--force` if untracked build artifacts block it; keep the branch), re-scan.
 
 ## Finish
