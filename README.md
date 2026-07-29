@@ -16,7 +16,7 @@ Pick the skills you want and which coding agents to install them on.
 
 | Skill | Description |
 | --- | --- |
-| [`setup-sdlc-harness`](./skills/setup-sdlc-harness/SKILL.md) | Stamp the autonomous SDLC harness (clear-board orchestrator, stage agents, board convention extensions) into a repo already set up with [mattpocock/skills](https://github.com/mattpocock/skills). |
+| [`setup-sdlc-harness`](./skills/setup-sdlc-harness/SKILL.md) | Stamp the autonomous SDLC harness (clear-board orchestrator, stage agents, tiered code-review skill, board convention extensions) into a repo already set up with [mattpocock/skills](https://github.com/mattpocock/skills). |
 
 ## Repo layout
 

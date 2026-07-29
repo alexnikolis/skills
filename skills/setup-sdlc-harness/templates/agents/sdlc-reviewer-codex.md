@@ -17,6 +17,7 @@ Create a temp dir (`mktemp -d`) and write `prompt.md` containing, in order:
 
    > ADAPTATIONS for this environment:
    > - You run non-interactively via `codex exec`. The sandbox is workspace-write only so the test suite can run — you must still not modify or commit any source, and never run `git push`.
+   > - The `sdlc-code-review` skill is not available to you. Perform the Standards axis yourself over the merge-base diff: correctness defects, code the repo already has a helper for, needless complexity or wasted work, and violations of the repo's documented standards — each with a `file:line`, a concrete failure scenario, and the fix. Say in the work-log entry that the standards pass ran unassisted.
    > - Do NOT record the work-log entry on the ticket yourself — the ticket may be outside your sandbox. Instead, end your final message with the complete entry (formatted exactly per the conventions doc) inside a fenced block opened with ```work-log-entry.
 
 3. Your full dispatch message, verbatim.

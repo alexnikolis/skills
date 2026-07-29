@@ -1,6 +1,6 @@
 ---
 name: setup-sdlc-harness
-description: "Stamp the autonomous SDLC harness (clear-board orchestrator, stage agents, board convention extensions) into a repo already set up with mattpocock/skills. Detects the repo's issue-tracker backend (local markdown, GitHub, or GitLab) and stamps matching conventions."
+description: "Stamp the autonomous SDLC harness (clear-board orchestrator, stage agents, tiered code-review skill, board convention extensions) into a repo already set up with mattpocock/skills. Detects the repo's issue-tracker backend (local markdown, GitHub, or GitLab) and stamps matching conventions."
 disable-model-invocation: true
 ---
 
@@ -20,7 +20,7 @@ The templates in this skill's `templates/` directory are the canonical versions.
    - `# Issue tracker: GitLab` → `gitlab`
    - Anything else (Jira, Linear, freeform "Other") → **decline and stamp nothing**: "The SDLC harness supports local, GitHub, and GitLab boards only. Your tracker is '<X>'. To use it anyway, write the two harness-extension sections by hand, modeled on this skill's `templates/conventions/`."
 2. Copy the four core agents (`sdlc-planner.md`, `sdlc-implementer.md`, `sdlc-reviewer.md`, `sdlc-advisor.md`) from `templates/agents/` → `.claude/agents/` (create dir if needed, overwrite existing sdlc-* files). The `*-codex.md` variants are copied only in step 4.
-3. Copy `templates/skills/clear-board/` → `.claude/skills/clear-board/` (overwrite; leave any existing `config.json` there alone — step 4 owns it).
+3. Copy every skill directory under `templates/skills/` → `.claude/skills/<name>/` (currently `clear-board` and `sdlc-code-review`; overwrite, but leave any existing `clear-board/config.json` alone — step 4 owns it).
 4. **Optional Codex backend**: ask whether the implement and/or review stages should run on an OpenAI model via the Codex CLI instead of Claude (planner, advisor, and orchestrator always stay Claude).
    - If yes: verify `codex --version` works — if not, say so and skip this step. Copy `templates/agents/sdlc-implementer-codex.md` and/or `sdlc-reviewer-codex.md` → `.claude/agents/` for the chosen stages, ask which model to pass as `-m` (blank = the Codex CLI's configured default), and write `.claude/skills/clear-board/config.json`, e.g. `{"implementer": "sdlc-implementer-codex", "reviewer": "sdlc-reviewer-codex", "codexModel": "gpt-5.1-codex"}` — include only the stage keys being rerouted, and omit `codexModel` if blank.
    - If no but an existing `config.json` reroutes stages: offer to delete it (reverting those stages to the Claude agents).
