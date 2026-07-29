@@ -25,7 +25,7 @@ Tracker writes are already durable — there is no board to commit to main and n
 
 ### Scan
 
-`gh issue list --state open --label "<ready-for-agent label>" --json number,title` (label string from `docs/agents/triage-labels.md`), then drop any issue with an open blocker (see Dependencies). On start, also `gh issue list --state open --label in-progress --json number,title` — those are resume candidates: read the harness-state block for caps and the issue comments for the last completed stage.
+`gh issue list --state open --label "<ready-for-agent label>" --json number,title,labels` (label string from `docs/agents/triage-labels.md`; `labels` carries the review-tier marker), then drop any issue with an open blocker (see Dependencies). On start, also `gh issue list --state open --label in-progress --json number,title,labels` — those are resume candidates: read the harness-state block for caps and the issue comments for the last completed stage.
 
 ### Claim and counters — harness-state block in the issue body
 

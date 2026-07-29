@@ -15,6 +15,7 @@ Arguments: `[scope]` — interpreted per the conventions doc (local board: the f
 All concrete ticket mechanics are defined in `docs/agents/issue-tracker.md` § SDLC harness extensions (status vocabulary: `docs/agents/triage-labels.md` § SDLC harness statuses). Use exactly the operations it defines — never invent others:
 
 - **list dispatchable tickets** / **read ticket**
+- **read review tier** — the ticket's review-tier marker (`docs/agents/triage-labels.md` § SDLC harness statuses); set means `high`, absent means `medium`
 - **claim ticket** — mark in-progress, initialize or increment counters, record worktree + branch
 - **increment counter**
 - **record work-log entry** — stage agents do this; you only read work logs
@@ -29,7 +30,7 @@ Stage → subagent defaults: plan `sdlc-planner`, implement `sdlc-implementer`, 
 
 ## Dry-run (`--plan`)
 
-Read the board, print the dependency DAG, the dispatch order/parallelism, the per-stage agent + model assignments (as resolved above), and the caps. Spawn nothing. Stop.
+Read the board, print the dependency DAG, the dispatch order/parallelism, the per-stage agent + model assignments (as resolved above), each ticket's review tier, and the caps. Spawn nothing. Stop.
 
 ## Hard limits (per ticket, tracked as ticket counters — see the conventions doc)
 
@@ -62,7 +63,7 @@ Each stage is one sub-agent (Agent tool) given only: ticket reference, worktree 
 1. **Plan** — `subagent_type`: the resolved planner. If it returns blocking open questions: resolve them yourself if trivial; otherwise this is an escalation — increment `Escalations:`, spawn `sdlc-advisor`, and relay `ANSWER:` back to the *paused planner* via SendMessage so it finalizes the plan (never restart it).
 2. **Implement** — `subagent_type`: the resolved implementer.
    - If it returns `ESCALATION:`: increment `Escalations:`; if over cap → REPLAN path. Otherwise spawn `sdlc-advisor` with the ticket reference, worktree path, escalation number, and the question. On `ANSWER:` relay it to the *same paused implementer* via SendMessage (keep its context; never restart it for an answer). On `REPLAN:` abandon the stage, increment `Attempts:`, reset `Escalations:` and `Fix rounds:`, and restart from Plan (cap permitting).
-3. **Review** — `subagent_type`: the resolved reviewer, passing the review round number (first review = round 1). On *needs-fixes*: increment `Fix rounds:` (cap 2), dispatch the resolved implementer again with the review findings as the work order and the fix-round number, then re-review with the next round number. On *approve*: proceed to landing.
+3. **Review** — `subagent_type`: the resolved reviewer, passing the review round number (first review = round 1) and the ticket's review tier. Re-read the tier from the board at every review dispatch rather than remembering it — that is what keeps a resumed run reviewing at the same depth as the original. On *needs-fixes*: increment `Fix rounds:` (cap 2), dispatch the resolved implementer again with the review findings as the work order and the fix-round number, then re-review with the next round number. On *approve*: proceed to landing.
 
 ## Landing (orchestrator does this itself, strictly serialized)
 
