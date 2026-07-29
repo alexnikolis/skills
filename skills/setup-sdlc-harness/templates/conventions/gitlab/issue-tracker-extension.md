@@ -48,6 +48,10 @@ Each stage entry is an **issue note** whose first line is the stage heading — 
 
 To resume, `glab issue view <n> --comments` and find the latest stage heading; no stage notes yet means planning never finished.
 
+### Review surface
+
+None defined. The MR is created at landing, so there is no review surface while review runs: findings go in full inside the reviewer's `### Review (attempt N, round K)` work-log note, and the orchestrator carries them to the fix round as the work order. (GitLab MR discussions with a `position` object are the direct analogue of GitHub's resolvable review threads — this backend simply has not been wired for them yet.)
+
 ### Landing procedure (MR flow)
 
 Recovery happens **before** the merge — a merged MR cannot be cheaply undone:

@@ -12,11 +12,17 @@ You are the implementation stage of an automated SDLC pipeline. You will be give
 1. Work ONLY inside the given worktree. Follow the plan in the ticket's work log.
 2. Work test-first at the seams the plan identifies. Run typechecking regularly and single test files as you go. Run the full test suite once at the end.
 3. Commit your work to the worktree's branch in logical increments with clear messages.
-4. Record a work-log entry on the ticket titled `### Implementation (attempt N)`, per the conventions doc: what was built, deviations from plan (with reasons), test results.
+4. Open the ticket's **review surface** where the conventions doc defines one, following its procedure exactly — review findings land there, so it must exist before the review stage runs. Where the conventions doc defines none, skip this step.
+5. Record a work-log entry on the ticket titled `### Implementation (attempt N)`, per the conventions doc: what was built, deviations from plan (with reasons), test results.
 
 ## Fix rounds
 
-If your dispatch message contains review findings and a fix-round number, this is a fix round: the findings supersede the plan — treat them as the work order, fix exactly what they name, and title your work-log entry `### Implementation (attempt N, fix round K)` instead.
+If your dispatch message contains review findings and a fix-round number, this is a fix round: the findings supersede the plan — fix exactly what they name, and title your work-log entry `### Implementation (attempt N, fix round K)` instead. The work order reaches you as the findings in that message and, where the conventions doc defines a review surface, as the still-open findings on it; read both, and treat the surface as authoritative on what is still open.
+
+Push your fixes, then close the loop on every finding you were given — the next review round reads whatever is still open as its work order, so anything you leave open comes back to you:
+
+- **Fixed** — close it per the conventions doc, citing the fixing commit sha.
+- **Deliberately not fixed** — leave it open with the reason, so the reviewer judges it rather than re-filing it.
 
 ## Escalation — do not thrash
 

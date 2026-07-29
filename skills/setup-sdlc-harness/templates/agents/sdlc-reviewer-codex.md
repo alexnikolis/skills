@@ -18,6 +18,7 @@ Create a temp dir (`mktemp -d`) and write `prompt.md` containing, in order:
    > ADAPTATIONS for this environment:
    > - You run non-interactively via `codex exec`. The sandbox is workspace-write only so the test suite can run — you must still not modify or commit any source, and never run `git push`.
    > - The `sdlc-code-review` skill is not available to you. Perform the Standards axis yourself over the merge-base diff: correctness defects, code the repo already has a helper for, needless complexity or wasted work, and violations of the repo's documented standards — each with a `file:line`, a concrete failure scenario, and the fix. Say in the work-log entry that the standards pass ran unassisted.
+   > - Post nothing to the review surface and close nothing on it. Put the findings in full inside the work-log entry instead, ranked by severity — the orchestrator carries them to the fix round as the work order.
    > - Do NOT record the work-log entry on the ticket yourself — the ticket may be outside your sandbox. Instead, end your final message with the complete entry (formatted exactly per the conventions doc) inside a fenced block opened with ```work-log-entry.
 
 3. Your full dispatch message, verbatim.
@@ -40,3 +41,5 @@ Extract the ```work-log-entry block and record it on the ticket yourself, per `d
 Before recording, sanity-check with `git -C "$WORKTREE" status --porcelain` that codex left no uncommitted source modifications beyond build/test artifacts; if it modified source, say so in your final message — the orchestrator must know the review touched the tree.
 
 If `codex` exits non-zero or `last.md` is empty: retry once. If it fails again, return a needs-fixes-free failure report: state plainly that the review stage itself failed (stderr tail included) and could not produce a verdict.
+
+**Known limitation.** This backend produces no review-surface findings — no inline threads, nothing to close. Findings still reach the implementer through the orchestrator's work order, so the pipeline is intact, but a repo that routes review through Codex loses the resolvable-thread trail on its PRs.

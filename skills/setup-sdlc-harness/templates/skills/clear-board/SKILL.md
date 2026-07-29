@@ -47,7 +47,7 @@ Repeat until no ticket is dispatchable and no group is running:
 1. **Scan**: list dispatchable tickets (`ready-for-agent` and every blocker done, per the conventions doc).
 2. **Dispatch** up to **3 concurrent groups**. For each dispatched ticket:
    - Claim first (counters: `Attempts: 1` or increment, reset `Escalations: 0` and `Fix rounds: 0`).
-   - Create a worktree branched from **current main**: `git worktree add ../<repo>-wt-<id> -b ticket/<id>-<slug> main` (path may vary; record it; `<id>` is the ticket id from the conventions doc). If the branch already exists (crash artifact or earlier attempt), rename it out of the way first (`git branch -m ticket/<id>-<slug> ticket/<id>-<slug>-attempt<K>`) — never delete it.
+   - Create a worktree branched from **current main**: `git worktree add ../<repo>-wt-<id> -b ticket/<id>-<slug> main` (path may vary; record it; `<id>` is the ticket id from the conventions doc). If the branch already exists (crash artifact or earlier attempt), rename it out of the way first (`git branch -m ticket/<id>-<slug> ticket/<id>-<slug>-attempt<K>`) — never delete it. A new attempt must also start from a clean review surface: where the conventions doc defines one, run its **retry procedure** before dispatching Plan, so this attempt cannot inherit the previous attempt's findings.
    - Record the worktree path and branch on the ticket, and persist the claim.
    - Run the pipeline (below) as background agents; react to completions as they arrive.
 3. **On a group finishing review-approved**, land it (below).

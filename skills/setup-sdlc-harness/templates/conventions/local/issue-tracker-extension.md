@@ -35,6 +35,10 @@ Dependency list, one entry per line as `- NN Title` (resolved by the `NN` prefix
 Appended per stage by the stage agents, one subsection each:
 `### Plan (attempt N)`, `### Implementation (attempt N)` — or `### Implementation (attempt N, fix round K)` for a fix round — `### Review (attempt N, round K)` (first review = round 1), `### Escalation N`, `### Landed` (the landing artifact).
 
+### Review surface
+
+None — a local board has no PR. Review findings go in full inside the reviewer's `### Review (attempt N, round K)` work-log entry, and the orchestrator carries them to the fix round as the work order. Agents that would otherwise post to a review surface write to the work log instead.
+
 ### Landing procedure
 
 Lands via local merge on main in the main checkout:
