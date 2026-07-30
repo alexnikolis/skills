@@ -80,7 +80,16 @@ jq -n --arg body "<summary line>" --argjson comments "$(cat "$TMP/comments.json"
 gh api --method POST repos/{owner}/{repo}/pulls/<pr>/reviews --input "$TMP/review.json"
 ```
 
-Each entry in `comments` is `{"path": "...", "line": 42, "side": "RIGHT", "body": "..."}`, where `line` is a line on the diff's **new** side. The API returns **422** when `line` is not part of the diff — retry that entry as a file-level comment (`{"path": "...", "subject_type": "file", "body": "..."}`), and if that also fails, fold it into the review `body` naming the location in prose. Never drop a finding because its anchor would not attach.
+Each entry in `comments` is `{"path": "...", "line": 42, "side": "RIGHT", "body": "..."}`, where `line` is a line on the diff's **new** side. The API returns **422 `Line could not be resolved`** when `line` is not part of the diff.
+
+Fall back to a **file-level comment**, which needs a different endpoint — `subject_type` is not a field on this endpoint's comment type, so adding it here fails with `Field is not defined on DraftPullRequestReviewComment`. Post the unanchorable entry on its own, and note that `commit_id` is required:
+
+```bash
+gh api --method POST repos/{owner}/{repo}/pulls/<pr>/comments \
+  -f path=<path> -f subject_type=file -f commit_id="$(git rev-parse HEAD)" -f body=<body>
+```
+
+That still creates a resolvable review thread, so it stays part of the work order like any other finding. If it also fails, fold the finding into the review `body` naming the location in prose. Never drop a finding because its anchor would not attach.
 
 Spec findings use the same surface, each prefixed `spec:`.
 
@@ -98,7 +107,9 @@ gh api graphql -f query='
   --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved | not)'
 ```
 
-Thread ids come back as `PRRT_…`. `isOutdated` marks a thread whose anchor a force-push invalidated — still open, still the work order, just no longer pinned to a line.
+Thread ids come back as `PRRT_…`. `isOutdated` marks a thread whose anchor a force-push invalidated — still open, still the work order, just no longer pinned to a line. A force-push does not invalidate anchors by itself: where the anchored content merely moved, GitHub re-anchors it and `line` shifts while `originalLine` keeps the position it was filed against.
+
+Do not read this query immediately after a push — it can serve pre-push line numbers for a few seconds while REST already reports the new ones. Read it before pushing, or re-read to confirm.
 
 **Close a finding** — reply with the fixing sha, then resolve. The reply needs the `databaseId` of the thread's first comment; the resolve needs the thread's `PRRT_` node id:
 
